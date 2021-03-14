@@ -1,0 +1,129 @@
+$iconSize = 121px
+
+.table
+	position relative
+	transition filter .5s ease-in-out
+
+	&.loading .cell
+		filter brightness(0.5)
+
+.cellParent
+	position relative
+	width $iconSize
+	padding 0 !important
+	height $iconSize
+
+.cell
+	width $iconSize
+	transition filter .5s ease-in-out
+	height $iconSize
+	background-image url('/assets/pokemon-shuffle/icons.png')
+	animation idleAnimation ease-in-out 1s
+	animation-iteration-count infinite
+	transform-origin 50% 50%
+	&.icon-0
+		background-position (1*$iconSize) 0px
+	&.icon-1
+		background-position (2*$iconSize) 0px
+	&.icon-2
+		background-position (3*$iconSize) 0px
+	&.icon-3
+		background-position (4*$iconSize) 0px
+	&.icon-4
+		background-position (5*$iconSize) 0px
+	&.icon-5
+		background-position (6*$iconSize) 0px
+	&.icon-6
+		background-position (7*$iconSize) 0px
+	&.icon-7
+		background-position (8*$iconSize) 0px
+	&.icon-8
+		background-position (9*$iconSize) 0px
+	&.icon-9
+		background-position (10*$iconSize) 0px
+	&.icon-10
+		background-position (11*$iconSize) 0px
+
+	&.isFalling
+		position absolute
+		animation fallingAnimation linear .3s
+		animation-iteration-count 1
+		transform-origin 50% 50%
+		animation-fill-mode forwards
+
+	&.explode
+		animation destroyAnimation ease-in-out .5s
+		animation-iteration-count 1
+		transform-origin 50% 50%
+		animation-fill-mode forwards
+
+		&::before
+			content " "
+			position absolute
+			bottom 0
+			width 100%
+			height 100%
+			border white solid 4px
+			border-radius 100%
+
+			animation destroyCircleAnimation ease-in-out .3s
+			animation-iteration-count 1
+			transform-origin 50% 50%
+			animation-fill-mode forwards
+
+	&.justSpawned
+		animation spawnAnimation ease-in-out 0.5s
+		animation-iteration-count 1
+		transform-origin 50% 50%
+
+@keyframes idleAnimation
+	0%
+		transform rotate(0)
+	20%
+		transform rotate(-10deg)
+	40%
+		transform rotate(10deg)
+	60%
+		transform rotate(-5deg)
+	80%
+		transform rotate(5deg)
+	100%
+		transform rotate(0)
+
+@keyframes fallingAnimation
+	from
+		top -117px // revoir précisément
+	to
+		top 3px
+
+@keyframes destroyCircleAnimation
+	0%
+		opacity 0
+		transform scale(0)
+	100%
+		opacity 1
+		transform scale(1.2)
+
+
+@keyframes destroyAnimation
+	0%
+		transform scale(1)
+		filter brightness(1)
+
+	20%
+		transform scale(1.3)
+		filter brightness(1.7)
+
+	100%
+		transform scale(0)
+		filter brightness(1.5)
+
+
+
+
+@keyframes spawnAnimation
+	from
+		transform: scale(0)
+
+	to
+		transform: scale(1)

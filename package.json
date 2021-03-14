@@ -1,0 +1,40 @@
+{
+	"name": "@dzeio/url-shortener",
+	"version": "1.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"server": "next start",
+		"lint": "eslint . --ext .ts,.tsx",
+		"test": "jest --config jext.config.js"
+	},
+	"dependencies": {
+		"@dzeio/components": "^0.2.1",
+		"@zeit/next-css": "^1.0.1",
+		"@zeit/next-stylus": "^1.0.1",
+		"easy-sitemap": "^1.0.0",
+		"next": "^10.0.3",
+		"next-compose-plugins": "^2.2.0",
+		"react": "^17.0.1",
+		"react-dom": "^17.0.1",
+		"react-feather": "^2.0.9",
+		"stylus": "^0.54.7",
+		"typescript": "^4.1.3",
+		"webpack": "^4.46.0"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.8.7",
+		"@types/favicons": "^6.2.0",
+		"@types/node": "^14.0.0",
+		"@types/react": "^17.0.0",
+		"@typescript-eslint/eslint-plugin": "^4.14.1",
+		"@typescript-eslint/parser": "^4.14.1",
+		"babel-preset-react-app": "^10.0.0",
+		"eslint": "^7.1.0",
+		"eslint-plugin-react": "^7.18.3",
+		"favicons": "^6.2.0",
+		"ts-node": "^9.1.1",
+		"vercel": "^21.2.2"
+	}
+}
