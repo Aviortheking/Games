@@ -1,10 +1,13 @@
-const stylus = require('@zeit/next-stylus')
-const css = require('@zeit/next-css')
+// Add support for Stylus/LESS
+const preCSS = require('next-pre-css')
+// Use Compose plugin for easier maintenance
 const withPlugins = require('next-compose-plugins')
+
 const {PHASE_DEVELOPMENT_SERVER} = require('next/constants')
+const nextConfig = require('./dzeio.next.config')
 
 module.exports = withPlugins([
-		[stylus, {
+		[preCSS, {
 			cssModules: true,
 			cssLoaderOptions: {
 				localIdentName: "[hash:base64:6]",
@@ -14,9 +17,7 @@ module.exports = withPlugins([
 					localIdentName: "[path][name]__[local]"
 				}
 			}
-		}],
-		[css, {
-			cssModules: false
 		}]
-	]
+	],
+	nextConfig
 )

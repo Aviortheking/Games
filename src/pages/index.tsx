@@ -1,5 +1,6 @@
-import { Link, Text } from '@dzeio/components'
 import React from 'react'
+
+import { Link, Text } from '@dzeio/components'
 
 export default class Index extends React.Component {
 

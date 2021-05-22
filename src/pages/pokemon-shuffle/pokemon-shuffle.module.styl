@@ -1,5 +1,10 @@
 $iconSize = 121px
 
+.hoverItem
+	position fixed
+	transform translate(-50%, -50%)
+	pointer-events none
+
 .table
 	position relative
 	transition filter .5s ease-in-out
@@ -21,28 +26,9 @@ $iconSize = 121px
 	animation idleAnimation ease-in-out 1s
 	animation-iteration-count infinite
 	transform-origin 50% 50%
-	&.icon-0
-		background-position (1*$iconSize) 0px
-	&.icon-1
-		background-position (2*$iconSize) 0px
-	&.icon-2
-		background-position (3*$iconSize) 0px
-	&.icon-3
-		background-position (4*$iconSize) 0px
-	&.icon-4
-		background-position (5*$iconSize) 0px
-	&.icon-5
-		background-position (6*$iconSize) 0px
-	&.icon-6
-		background-position (7*$iconSize) 0px
-	&.icon-7
-		background-position (8*$iconSize) 0px
-	&.icon-8
-		background-position (9*$iconSize) 0px
-	&.icon-9
-		background-position (10*$iconSize) 0px
-	&.icon-10
-		background-position (11*$iconSize) 0px
+	for num in (0..30)
+		&.icon-{num}
+			background-position ((num + 1) * $iconSize) 0px
 
 	&.isFalling
 		position absolute
@@ -94,7 +80,7 @@ $iconSize = 121px
 	from
 		top -117px // revoir précisément
 	to
-		top 3px
+		top 0
 
 @keyframes destroyCircleAnimation
 	0%
