@@ -1,6 +1,12 @@
-import { Button, Table, Text, Util, NotificationManager, Col, Row } from '@dzeio/components'
+import { Button, Text, Util, NotificationManager, Col, Row, Input } from '@dzeio/components'
+import { GetServerSideProps } from 'next'
 import React, { MouseEvent as ReactMouseEvent } from 'react'
 import css from './pokemon-shuffle.module.styl'
+
+interface Props {
+	itemCount: number
+	boardSize: number
+}
 
 interface Cell {
 	id: number
@@ -20,18 +26,14 @@ interface States {
 	combo: number
 	comboMax: number
 	cursorPos: {x: number, y: number}
+	hitBoss: boolean
 	boss: {
 		hp: number
 		id: number
 	}
 }
 
-// up by 1 because of `1`
-const ITEM_COUNT = 2 + 1
-const BOARD_SIZE = 6
-let n = BOARD_SIZE
-
-export default class PokemonShuffle extends React.Component<unknown, States> {
+export default class PokemonShuffle extends React.Component<Props, States> {
 
 	public state: States = {
 		items: [[]],
@@ -40,21 +42,33 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 		combo: 0,
 		comboMax: 0,
 		cursorPos: {x: 0, y: 0},
+		hitBoss: false,
 		boss: {
-			hp: 10e3,
+			hp: 10e4,
 			id: 2
 		}
 	}
 
+	private n = this.props.boardSize
+
+
 	public async componentDidMount() {
 		await this.start()
+		const boss = document.querySelector<HTMLElement>(`.${css.boss}`)
+		console.log(boss)
 		this.setState({
+			boss: Object.assign(this.state.boss, {pos: [boss?.offsetTop ?? 0, boss?.offsetLeft ?? 0]}),
 			comboMax: parseInt(window.localStorage.getItem('pokemon-shuffle/comboMax') ?? '0', 10)
 		})
 	}
 
 	public render = () => (
 		<main>
+			<form method="GET">
+				<Input name="boardSize" type="number" placeholder="Nombre de lignes" defaultValue={this.props.boardSize} max={10} />
+				<Input name="itemCount" type="number" placeholder="Nombre de pokémon différents" defaultValue={this.props.itemCount - 1} max={810} />
+				<Button>Changer</Button>
+			</form>
 			<ul>
 				<li><Text>Tour: {this.state.turn}</Text></li>
 				<li><Text>Combo: {this.state.combo}, Max: {this.state.comboMax}</Text></li>
@@ -68,7 +82,8 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 								css[`icon-${this.state.boss.id}`],
 								css.cell,
 								css.noAnimation,
-								css.boss
+								css.boss,
+								[css.loading, this.state.hitBoss]
 							)}>
 							</Text>
 						</Col>
@@ -116,7 +131,8 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 			{this.state.movingItem && (
 				<div className={css.hoverItem} style={{
 					left: this.state.cursorPos.x,
-					top: this.state.cursorPos.y
+					top: this.state.cursorPos.y,
+					// transform: 'scale(2)'
 				}}>
 					<Text className={Util.buildClassName(css[`icon-${this.state.movingItem.cell?.id}`], css.cell)}>
 						<div></div>
@@ -150,10 +166,10 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 			loading: true,
 			// generate datas
 			items: Array
-				.from(Array(BOARD_SIZE))
+				.from(Array(this.props.boardSize))
 				.map(
-					() => Array.from(Array(BOARD_SIZE))
-						.map(() => ({id: random(0, ITEM_COUNT), id2: n++}))
+					() => Array.from(Array(this.props.boardSize))
+						.map(() => ({id: random(0, this.props.itemCount), id2: this.n++}))
 				)
 		})
 		// Quickly calculate everythings to make it look like it was perfecly generated
@@ -280,7 +296,8 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 				items,
 				damage: this.state.damage + newPoints,
 				combo,
-				comboMax
+				comboMax,
+				hitBoss: true
 			})
 		}
 		return !!checkupCount
@@ -329,13 +346,13 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 				const cell = items[0][x]
 				if (!cell) {
 					needContinue = true
-					items[0][x] = {id: random(0, ITEM_COUNT), id2: n++, justSpawned: true}
+					items[0][x] = {id: random(0, this.props.itemCount), id2: this.n++, justSpawned: true}
 				}
 			}
 
 			// Need to wait for the falling animation
 			if (needContinue) {
-				await this.asyncSetState({items})
+				await this.asyncSetState({items, hitBoss: false})
 				if (!initial) {
 					await wait(300)
 				}
@@ -392,7 +409,7 @@ function calculateScore(len: number, combo: number) {
 			score *= 1.1
 		}
 		if (combo >= 5 && combo <= 9) {
-			score *= 1.1
+			score *= 1.15
 		}
 		if (combo >= 10 && combo <= 24) {
 			score *= 1.2
@@ -427,4 +444,16 @@ function random(min = 0, max = 100): number {
 
 function wait(time: number): Promise<void> {
 	return new Promise((res) => setTimeout(() => res(), time))
+}
+
+export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
+	const { boardSize, itemCount } = ctx.query as Record<string, string>
+
+	return {
+		props: {
+			// add 1 to suppress the `?`
+			itemCount: itemCount ? parseInt(itemCount, 10) + 1 : 7,
+			boardSize: boardSize ? parseInt(boardSize, 10) : 7
+		}
+	}
 }
