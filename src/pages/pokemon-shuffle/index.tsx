@@ -1,4 +1,4 @@
-import { Button, Table, Text, Util, NotificationManager } from '@dzeio/components'
+import { Button, Table, Text, Util, NotificationManager, Col, Row } from '@dzeio/components'
 import React, { MouseEvent as ReactMouseEvent } from 'react'
 import css from './pokemon-shuffle.module.styl'
 
@@ -20,9 +20,14 @@ interface States {
 	combo: number
 	comboMax: number
 	cursorPos: {x: number, y: number}
+	boss: {
+		hp: number
+		id: number
+	}
 }
 
-const ITEM_COUNT = 4
+// up by 1 because of `1`
+const ITEM_COUNT = 2 + 1
 const BOARD_SIZE = 6
 let n = BOARD_SIZE
 
@@ -34,11 +39,18 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 		turn: 0,
 		combo: 0,
 		comboMax: 0,
-		cursorPos: {x: 0, y: 0}
+		cursorPos: {x: 0, y: 0},
+		boss: {
+			hp: 10e3,
+			id: 2
+		}
 	}
 
 	public async componentDidMount() {
 		await this.start()
+		this.setState({
+			comboMax: parseInt(window.localStorage.getItem('pokemon-shuffle/comboMax') ?? '0', 10)
+		})
 	}
 
 	public render = () => (
@@ -48,34 +60,58 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 				<li><Text>Combo: {this.state.combo}, Max: {this.state.comboMax}</Text></li>
 				<li><Text>Points: {this.state.damage}</Text></li>
 			</ul>
-			<Table >
-				<tbody className={Util.buildClassName(css.table, [css.loading, this.state.loading])}>
-					{this.state.items.map((row, y) => (
-						<tr key={y}>
-							{row.map((cell, x) => (
-								<td
-									key={cell?.id2 ?? x}
-									onClick={this.onCellClick(x, y)}
-									className={css.cellParent}
-								>
-									{/* <Text>{JSON.stringify(cell)}</Text> */}
-									{cell && (
-										<Text className={Util.buildClassName(
-											css[`icon-${cell.id}`],
-											css.cell,
-											[css.isFalling, cell.isFalling],
-											[css.justSpawned, cell.justSpawned],
-											[css.explode, cell.horizontalCombo || cell.verticalCombo]
-										)}>
-											<div></div>
-										</Text>
-									)}
-								</td>
+			<Row align="center" >
+				<Col>
+					<Row direction="column" justify="center" align="center" >
+						<Col nogrow>
+							<Text className={Util.buildClassName(
+								css[`icon-${this.state.boss.id}`],
+								css.cell,
+								css.noAnimation,
+								css.boss
+							)}>
+							</Text>
+						</Col>
+						<Col nogrow>
+							<div className={css.bossBar}>
+								<div>
+									<div style={{width: `${Math.max(0, 100 - (100 * this.state.damage / this.state.boss.hp))}%`}}></div>
+								</div>
+							</div>
+						</Col>
+					</Row>
+				</Col>
+				<Col>
+					<table style={{margin: 'auto'}} className={css.table}>
+						<tbody className={Util.buildClassName(css.table, [css.loading, this.state.loading])}>
+							{this.state.items.map((row, y) => (
+								<tr key={y}>
+									{row.map((cell, x) => (
+										<td
+											key={cell?.id2 ?? x}
+											onClick={this.onCellClick(x, y)}
+											className={css.cellParent}
+										>
+											{/* <Text>{JSON.stringify(cell)}</Text> */}
+											{cell && (
+												<Text className={Util.buildClassName(
+													css[`icon-${cell.id}`],
+													css.cell,
+													[css.isFalling, cell.isFalling],
+													[css.justSpawned, cell.justSpawned],
+													[css.explode, cell.horizontalCombo || cell.verticalCombo]
+												)}>
+												</Text>
+											)}
+										</td>
+									))}
+								</tr>
 							))}
-						</tr>
-					))}
-				</tbody>
-			</Table>
+						</tbody>
+					</table>
+
+				</Col>
+			</Row>
 			<Button onClick={this.start}>Start!</Button>
 			{this.state.movingItem && (
 				<div className={css.hoverItem} style={{
@@ -92,9 +128,10 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 			</Text>
 			<ul>
 				<li><Text>Faire que les clear ce fasse de manière Async</Text></li>
-				<li><Text>Meilleurs Animation de destruction</Text></li>
-				<li><Text>Annuler le mouvement si rien n&apos;est claim</Text></li>
 				<li><Text>Utiliser le système de damages de Pokémon Shuffle https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_Shuffle#Damage</Text></li>
+				<li><Text>Mode VS (Voir si on fait en local et/ou en ligne avec le Websocket)</Text></li>
+				<li><Text>Système de classement en ligne (maybe avec un compte pour eviter lees hackers lol)</Text></li>
+				<li><Text>Combat de boss a la Pokémon Shuffle lol</Text></li>
 			</ul>
 			<NotificationManager />
 		</main>
@@ -142,13 +179,29 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 			document.removeEventListener('mousemove', this.mouveMove)
 			const items = this.state.items
 			const temp = items[y][x]
+			console.log(temp, this.state.movingItem)
 			items[y][x] = this.state.movingItem.cell
-			items[this.state.movingItem.y][this.state.movingItem.x] = temp
+			const tmpX = this.state.movingItem.x
+			const tmpY = this.state.movingItem.y
+			if (temp) {
+				items[tmpY][tmpX] = temp
+			}
 			this.setState({
 				movingItem: undefined,
 				loading: true,
 				items
-			}, () => this.calculate())
+			}, async () => {
+				const revert = !await this.calculate()
+				if (revert) {
+					const movingItem = items[y][x]
+					items[y][x] = temp
+					items[tmpY][tmpX] = movingItem
+					this.setState({
+						items,
+						turn: this.state.turn - 1
+					})
+				}
+			})
 
 		}
 	}
@@ -161,7 +214,7 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 	 * Check if items has combos
 	 * @returns if items were changed
 	 */
-	private async checkup(): Promise<boolean> {
+	private async checkup(initial: boolean): Promise<boolean> {
 		const items = this.state.items
 		let checkupCount = 0
 		let newPoints = 0
@@ -175,7 +228,7 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 				if (!cell.horizontalCombo && !(cell.isFalling || cell.justSpawned)) {
 					let sameCount = 0
 					while((x + ++sameCount) < items.length) {
-						console.log(y + sameCount, x)
+						// console.log(y + sameCount, x)
 						const tmp = row[x + sameCount]
 						if (!tmp || tmp.id !== id || tmp.isFalling || tmp.justSpawned) {break}
 					}
@@ -219,11 +272,15 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 		// If combos were found
 		if (checkupCount) {
 			const combo = this.state.combo + checkupCount
+			const comboMax = Math.max(this.state.comboMax, combo)
+			if (comboMax === combo && !initial) {
+				window.localStorage.setItem('pokemon-shuffle/comboMax', comboMax.toString())
+			}
 			await this.asyncSetState({
 				items,
 				damage: this.state.damage + newPoints,
 				combo,
-				comboMax: Math.max(this.state.comboMax, combo)
+				comboMax
 			})
 		}
 		return !!checkupCount
@@ -245,6 +302,7 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 		}))
 
 		let needContinue = false
+		let hadTurn = false
 		do {
 			// Make items fall
 			needContinue = false
@@ -284,9 +342,10 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 			}
 
 			// Checkup if there is combos
-			const checkup = await this.checkup()
+			const checkup = await this.checkup(initial)
 			if (!checkup && !needContinue) {
-				return await this.endTurn({items})
+				await this.endTurn({items})
+				break
 			}
 
 			// Clear items
@@ -304,13 +363,15 @@ export default class PokemonShuffle extends React.Component<unknown, States> {
 			if (hasCleared && !initial) {
 				await wait(500)
 			}
+			hadTurn = true
 
 		} while (needContinue)
+		return hadTurn
 	}
 }
 
 function calculateScore(len: number, combo: number) {
-	let score = len * 40 // currently the damage
+	let score = (len - 2) * 40 // currently the damage
 	if (len > 3) {
 		switch (len) {
 		case 4:
@@ -355,8 +416,13 @@ function calculateScore(len: number, combo: number) {
 	return score
 }
 
-function random(min = 0, max = 100) {
-	return Math.floor(Math.random() * (max - min) + min)
+function random(min = 0, max = 100): number {
+	const r = Math.floor(Math.random() * (max - min) + min)
+	// dont return 1 as it is the `?`
+	if (r === 1) {
+		return random(min, max)
+	}
+	return r
 }
 
 function wait(time: number): Promise<void> {

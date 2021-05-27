@@ -17,18 +17,33 @@ $iconSize = 121px
 	width $iconSize
 	padding 0 !important
 	height $iconSize
+	box-shadow inset 0 0 8px 1px black
+	background-image url('/assets/pokemon-shuffle/cell-bg.png')
+	border-radius 16px
+
+.table
+	background #7E6E5E
+	border-spacing 8px
+	border-radius 16px
+	border solid white 4px
+
+.boss
+	// margin auto
+	transform scale(3)
+	margin ($iconSize)px auto
 
 .cell
 	width $iconSize
 	transition filter .5s ease-in-out
 	height $iconSize
 	background-image url('/assets/pokemon-shuffle/icons.png')
-	animation idleAnimation ease-in-out 1s
-	animation-iteration-count infinite
+	&:not(.noAnimation)
+		animation idleAnimation ease-in-out 1s
+		animation-iteration-count infinite
 	transform-origin 50% 50%
-	for num in (0..30)
+	for num in (0..810)
 		&.icon-{num}
-			background-position ((num + 1) * $iconSize) 0px
+			background-position right ((num % 30) * $iconSize) bottom (math(num / 30, 'trunc') * $iconSize + $iconSize)px
 
 	&.isFalling
 		position absolute
@@ -58,9 +73,29 @@ $iconSize = 121px
 			animation-fill-mode forwards
 
 	&.justSpawned
-		animation spawnAnimation ease-in-out 0.5s
+		animation spawnAnimation ease-in-out .3s
 		animation-iteration-count 1
 		transform-origin 50% 50%
+
+.bossBar
+	width 300px
+	border 4px solid white
+	padding 3px
+	$height = 10px
+	height $height + @padding[0] * 2 + @border[0] * 2
+	background #ED869F
+
+	border-radius 16px
+	> div
+		background #7E7C7B
+		width 100%
+		border-radius 16px
+		height $height
+		> div
+			background linear-gradient(to bottom, #FFCAB1, #E7A09E)
+			border-radius 16px
+			height inherit
+			transition width .3s ease-in-out
 
 @keyframes idleAnimation
 	0%
@@ -98,11 +133,11 @@ $iconSize = 121px
 
 	20%
 		transform scale(1.3)
-		filter brightness(1.7)
+		filter brightness(1.5)
 
 	100%
 		transform scale(0)
-		filter brightness(1.5)
+		filter brightness(1.2)
 
 
 
