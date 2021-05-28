@@ -11,10 +11,10 @@ export default class CApp extends App {
 
 		return (
 			<PlausibleProvider
-				customDomain="https://stats.dzeio.com"
+				enabled
+				customDomain="https://proxy.dzeio.com"
 				domain="games.avior.me"
-				trackOutboundLinks
-				integrity="sha384-Bwk7iNMK9H56PgZeINNhN5Mk42LZoNIXe6Ztx5lfALsrTkNWC9yh2J2UFO0xShAv"
+				integrity="sha256-R6vN8jmBq9SIpnfJRnw9eNUfLbC2yO3GPQAKR5ZS7zQ="
 			>
 				<Component {...pageProps} />
 			</PlausibleProvider>

@@ -60,11 +60,11 @@
 				"form-action 'self'; " +
 				"manifest-src 'self'; " +
 				"prefetch-src 'self'; " +
-				"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://stats.dzeio.com; " +
+				"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://proxy.dzeio.com; " +
 				"style-src 'self' 'unsafe-inline'; " +
 				"img-src data: 'self'; " +
 				"font-src 'self'; " +
-				"connect-src 'self' https://stats.dzeio.com; " +
+				"connect-src 'self' https://proxy.dzeio.com; " +
 				"base-uri 'self';"
 		}
 		const XXssProtection = {
