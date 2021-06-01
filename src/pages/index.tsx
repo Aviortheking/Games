@@ -9,6 +9,9 @@ export default class Index extends React.Component {
 			<Text>
 				<Link href="/pokemon-shuffle">Pokémon Shuffle</Link>
 			</Text>
+			<Text>
+				<Link href="/tictactoe">TicTacToe mais ou il y a eu beaucoup trop de temps de passé sur le jeux</Link>
+			</Text>
 		</main>
 	)
 }
