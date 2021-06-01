@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import GameEngine, { Component2D, ComponentState, Scene, SoundManager } from 'GameEngine'
+import { Component2D, ComponentState, SoundManager } from 'GameEngine'
 
 const globalState: {
 	playerTurn: 'X' | 'O'
@@ -17,7 +17,7 @@ const globalState: {
 	]
 }
 
-class Item extends Component2D {
+export class Item extends Component2D {
 
 	public size = {
 		width: .9,
@@ -126,7 +126,7 @@ class Item extends Component2D {
 	}
 }
 
-class Line extends Component2D {
+export class Line extends Component2D {
 
 	public constructor(direction: number, index: number) {
 		super()
@@ -145,17 +145,3 @@ class Line extends Component2D {
 	}
 
 }
-
-const ge = new GameEngine('#test', {
-	caseCount: 3,
-	background: 'blue'
-})
-const scene = new Scene('TicTacToe')
-scene.addComponent(
-	...Array.from(new Array(2)).map((_, index) => new Line(0, index)),
-	...Array.from(new Array(2)).map((_, index) => new Line(1, index)),
-	...Array.from(new Array(9)).map((_, index) => new Item(index)),
-)
-
-ge.start()
-ge.setScene(scene)

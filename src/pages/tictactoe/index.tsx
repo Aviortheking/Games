@@ -1,9 +1,22 @@
 import { Text, Link } from '@dzeio/components'
+import GameEngine, { Scene } from 'GameEngine'
 import React from 'react'
+import { Item, Line } from '../../games/tictactoe'
 export default class Snake extends React.PureComponent {
 	public async componentDidMount() {
-		await import('./Game')
+		const ge = new GameEngine('#test', {
+			caseCount: 3,
+			background: 'blue'
+		})
+		const scene = new Scene('TicTacToe')
+		scene.addComponent(
+			...Array.from(new Array(2)).map((_, index) => new Line(0, index)),
+			...Array.from(new Array(2)).map((_, index) => new Line(1, index)),
+			...Array.from(new Array(9)).map((_, index) => new Item(index)),
+		)
 
+		ge.start()
+		ge.setScene(scene)
 	}
 	public render = () => (
 		<>
