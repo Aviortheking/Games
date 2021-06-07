@@ -35,7 +35,7 @@
 	},
 
 	// Non experimental config
-	// target: 'serverless',
+	target: 'server',
 	poweredByHeader: false,
 	trailingSlash: false,
 	optimizeFonts: true,
