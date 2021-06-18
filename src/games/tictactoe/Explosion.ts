@@ -1,3 +1,4 @@
+import Vector2D from 'GameEngine/2D/Vector2D'
 import Asset from 'GameEngine/Asset'
 import Component2D from 'GameEngine/Component2D'
 import TileRenderer from 'GameEngine/Renderer/TileRenderer'
@@ -11,29 +12,33 @@ export class Explosion extends Component2D {
 		height: .9
 	}
 
+	// public origin = new Vector2D(-.5, -.5)
+
 	private explosionTileset = new Tileset(Asset.init('/assets/tictactoe/explosion.png'), {
-		fileSize: {width: 480, height: 362},
-		tileSize: 91,
-		spacing: 1,
+		fileSize: {width: 192, height: 32},
+		tileSize: 32
 	})
 	private animationNumber = -1
 	private n = 0
 
 
 	public update() {
-		if (this.animationNumber !== -1 && this.n++ >= 10) {
-			this.renderer = new TileRenderer(this, this.explosionTileset, this.animationNumber++)
+		if (this.animationNumber !== -1 && this.n++ >= 12) {
+			this.renderer = new TileRenderer(this, {
+				id: this.animationNumber++,
+				tileset: this.explosionTileset
+			})
 			this.n = 0
-			if (this.animationNumber >= 10) {
+			if (this.animationNumber > 5) {
 				this.animationNumber = -1
 				this.renderer = undefined
 			}
 		}
 	}
 
-	public run(pos: Component2D['pos']) {
-		new SoundManager('/assets/tictactoe/victory.wav').play()
-		this.pos = pos
+	public run(pos: Vector2D) {
+		new SoundManager('/assets/tictactoe/explosion.wav').play()
+		this.position = pos
 		this.animationNumber = 0
 	}
 }

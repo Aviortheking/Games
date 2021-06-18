@@ -1,12 +1,17 @@
 import Asset from './Asset'
 
-export interface TilesetDeclaration {
+export type TilesetDeclaration = {
 	// id: string
 	// padding?: number
 	fileSize: {width: number, height: number}
 	tileSize: number | {width: number, height: number}
 	spacing?: number
-}
+} | Array<{
+	x: number
+	y: number
+	width: number
+	height: number
+}>
 
 export default class Tileset {
 
@@ -15,26 +20,37 @@ export default class Tileset {
 		private declaration: TilesetDeclaration
 	) {}
 
-	public getPosFromId(id: number): {x: number, y: number} {
-		const cols = Math.trunc(this.declaration.fileSize.width / this.width())
-		const x = id % cols
-		const y = Math.trunc(id / cols)
-		return {x, y}
-	}
+	// public getPosFromId(id: number): {x: number, y: number} {
+
+	// 	return {x, y}
+	// }
 
 	public getSourceData(id: number): {sx: number ,sy: number} {
-		const {x, y} = this.getPosFromId(id)
-		const sx = x * this.width() + x * (this.declaration.spacing ?? 0)
-		const sy = y * this.height() + y * (this.declaration.spacing ?? 0)
+		if (Array.isArray(this.declaration)) {
+			const item = this.declaration[id]
+			return {sx: item.x, sy: item.y}
+		}
+		// const {x, y} = this.getPosFromId(id)
+		const cols = Math.trunc(this.declaration.fileSize.width / this.width(id))
+		const x = id % cols
+		const y = Math.trunc(id / cols)
+		const sx = x * this.width(id) + x * (this.declaration.spacing ?? 0)
+		const sy = y * this.height(id) + y * (this.declaration.spacing ?? 0)
 		return {sx, sy}
 	}
 
-	public width() {
+	public width(id: number) {
+		if (Array.isArray(this.declaration)) {
+			return this.declaration[id].width
+		}
 		const item = this.declaration.tileSize
 		return typeof item === 'number' ? item : item.width
 	}
 
-	public height() {
+	public height(id: number) {
+		if (Array.isArray(this.declaration)) {
+			return this.declaration[id].height
+		}
 		const item = this.declaration.tileSize
 		return typeof item === 'number' ? item : item.height
 	}

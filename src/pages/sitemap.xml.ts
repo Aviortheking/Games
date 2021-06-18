@@ -7,6 +7,7 @@ export const getServerSideProps: GetServerSideProps = async ({res}) => {
 	const sitemap = new Sitemap('https://games.avior.me', {response: res})
 	sitemap.addEntry('/')
 	sitemap.addEntry('/pokemon-shuffle')
+	sitemap.addEntry('/tictactoe')
 	sitemap.build()
 	return {
 		notFound: true

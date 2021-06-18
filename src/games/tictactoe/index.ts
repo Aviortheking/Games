@@ -5,11 +5,13 @@ export const globalState: {
 		[string, string, string],
 		[string, string, string],
 	]
+	isPlaying: boolean
 } = {
 	playerTurn: 'X',
 	gameState: [
 		['', '', ''],
 		['', '', ''],
 		['', '', '']
-	]
+	],
+	isPlaying: false
 }

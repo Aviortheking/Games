@@ -1,4 +1,4 @@
-// V1.1.1 - Added futures blurry Placeholder and left optimizedLoading enabled
+// V1.1.2 - Moved webpack5 to top level
 // Updated to commit from 2021-05-18
 // https://github.com/vercel/next.js/commits/canary/packages/next/next-server/server/config-shared.ts
 /**
@@ -40,10 +40,10 @@
 	trailingSlash: false,
 	optimizeFonts: true,
 	reactStrictMode: true,
+	webpack5: true,
 
 	// Futures
 	future: {
-		webpack5: true,
 		strictPostcssConfiguration: true,
 		excludeDefaultMomentLocales: true
 	},
