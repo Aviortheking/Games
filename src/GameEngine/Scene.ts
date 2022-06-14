@@ -1,6 +1,6 @@
 import GameEngine from 'GameEngine'
 import AssetsManager from './Asset'
-import Camera from './Camera'
+import Camera from './Components/Camera'
 import Component2D, { ComponentState } from './Component2D'
 
 export default class Scene {
@@ -42,6 +42,12 @@ export default class Scene {
 		}
 	}
 
+	public async destroy() {
+		for await (const component of this.components) {
+			await component.destroy?.()
+		}
+	}
+
 	private async updateComponent(v: Component2D) {
 		const debug = v.debug
 		if (debug) {
@@ -64,6 +70,13 @@ export default class Scene {
 		// 	state.mouseClicking = state.mouseHovering && this.ge.cursor.isDown
 		// 	state.mouseClicked = state.mouseClicking && !this.ge.cursor.wasDown
 		// }
+		if (v.update) {
+			if (debug) {
+				console.log('Updating Component', v)
+			}
+			v.update(state as ComponentState)
+		}
+
 		if (v.renderer) {
 			if (debug) {
 				console.log('Rendering Component', v)
@@ -71,17 +84,12 @@ export default class Scene {
 			// console.log('is rendering new element')
 			await v.renderer.render(this.ge, this.ge.ctx)
 		}
-		if (v.update) {
-			if (debug) {
-				console.log('Updating Component', v)
-			}
-			v.update(state as ComponentState)
-		}
+
 		if (v.childs) {
 			if (debug) {
 				console.log('Processing childs', v)
 			}
-			for (const child of v.childs) {
+			for await (const child of v.childs) {
 				await this.updateComponent(child)
 			}
 		}

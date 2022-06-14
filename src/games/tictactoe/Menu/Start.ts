@@ -13,11 +13,16 @@ export default class Start extends Component2D {
 	public collider: BoxCollider2D = new BoxCollider2D(this, 'click')
 	public childs: Array<Component2D> = [new ColliderDebugger(this, this.collider)]
 
-	public update(state: ComponentState) {
+	private hasCollided = false
+
+	public async update(state: ComponentState) {
 		if (state.isColliding === 'click') {
+			this.hasCollided = true
+		} else if (this.hasCollided) {
 			console.log('Start Game !')
-			GameEngine.getGameEngine().setScene('TicTacToe')
+			await GameEngine.getGameEngine().setScene('TicTacToe')
 			globalState.isPlaying = true
+			this.hasCollided = false
 		}
 	}
 }

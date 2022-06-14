@@ -21,15 +21,22 @@ export default class GameEngine {
 		isDown: false,
 		wasDown: false
 	}
-	public currentScene!: Scene
+	public currentScene?: Scene
 	private isRunning = false
+	private timer = 16.6
 
 	public constructor(
-		private id: string,
+		id: string,
 		public options?: {
 			caseCount?: number | [number, number]
 			background?: string
 			debugColliders?: boolean
+			/**
+			 * Maximum framerate you want to achieve
+			 *
+			 * note: -1 mean infinite
+			 */
+			goalFramerate?: number
 		}
 	) {
 		GameEngine.ge = this
@@ -53,6 +60,14 @@ export default class GameEngine {
 		}
 		ctx.imageSmoothingEnabled = false
 		this.ctx = ctx
+
+		if (options?.goalFramerate) {
+			if (options.goalFramerate === -1) {
+				this.timer = 0
+			} else {
+				this.timer = 1000 / options.goalFramerate
+			}
+		}
 	}
 
 	public static getGameEngine(): GameEngine {
@@ -70,8 +85,8 @@ export default class GameEngine {
 		})
 		document.addEventListener('mousemove', (ev) => {
 			this.cursor.position = new Vector2D(
-				ev.clientX / this.caseSize.x - this.currentScene.camera.topLeft.x,
-				ev.clientY / this.caseSize.y - this.currentScene.camera.topLeft.y
+				ev.clientX / this.caseSize.x - (this.currentScene?.camera?.topLeft?.x ?? 0),
+				ev.clientY / this.caseSize.y - (this.currentScene?.camera?.topLeft?.y ?? 0)
 			)
 			if (this.cursor.isDown) {
 				this.cursor.wasDown = true
@@ -90,13 +105,15 @@ export default class GameEngine {
 		this.isRunning = false
 	}
 
-	public setScene(scene: Scene | string) {
+	public async setScene(scene: Scene | string) {
 		console.log('Setting scene', typeof scene === 'string' ? scene : scene.id)
+		await this.currentScene?.destroy()
 		this.currentScene = typeof scene === 'string' ? Scene.scenes[scene] : scene
 		this.currentScene.setGameEngine(this)
 	}
 
 	private update() {
+		const now = new Date().getTime()
 		if (!this.isRunning) {
 			return
 		}
@@ -106,9 +123,19 @@ export default class GameEngine {
 			this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 		}
 		this.currentScene?.update()
-		setTimeout(() => {
-			this.update()
-		}, 0)
+		const diff = new Date().getTime() - now
+		if (diff > this.timer) {
+			requestAnimationFrame(() => {
+				this.update()
+			})
+		} else {
+			setTimeout(() => {
+				// this.update()
+				requestAnimationFrame(() => {
+					this.update()
+				})
+			}, this.timer - diff)
+		}
 	}
 }
 

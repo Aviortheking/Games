@@ -4,7 +4,6 @@ export default class Vector2D {
 		public y: number
 	) {}
 
-
 	public multiply(v: Vector2D): Vector2D {
 		return new Vector2D(
 			v.x * this.x,

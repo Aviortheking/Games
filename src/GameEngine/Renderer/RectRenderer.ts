@@ -9,7 +9,7 @@ interface Params {
 	stroke?: string
 }
 
-export default class RectRenderer extends Renderer implements Partial<Params> {
+export default class RectRenderer extends Renderer implements Params {
 
 	public material?: string | Asset
 	public stroke?: string

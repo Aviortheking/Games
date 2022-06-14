@@ -6,6 +6,8 @@ import Scene from 'GameEngine/Scene'
 import Item from 'games/tictactoe/Item'
 import Line from 'games/tictactoe/Line'
 import Start from 'games/tictactoe/Menu/Start'
+import FPSCounter from 'GameEngine/Components/FPSCounter'
+import ComponentDebug from 'GameEngine/2D/Debug/ComponentDebug'
 
 export default class Snake extends React.PureComponent {
 
@@ -13,23 +15,26 @@ export default class Snake extends React.PureComponent {
 		const ge = new GameEngine('#test', {
 			caseCount: 3,
 			background: 'blue',
-			debugColliders: true
+			debugColliders: true,
+			goalFramerate: 30
 		})
 		const menuScene = new Scene('Menu')
 		menuScene.addComponent(
-			new Start()
+			new Start(),
+			new FPSCounter()
 		)
 		const scene = new Scene('TicTacToe')
 		scene.addComponent(
 			...Array.from(new Array(2)).map((_, index) => new Line(0, index)),
 			...Array.from(new Array(2)).map((_, index) => new Line(1, index)),
 			...Array.from(new Array(9)).map((_, index) => new Item(index)),
-			Item.explosion
+			Item.explosion,
+			new FPSCounter()
 			// new TilingDebugger()
 		)
 
+		await ge.setScene(menuScene)
 		ge.start()
-		ge.setScene(menuScene)
 	}
 
 	public render = () => (
