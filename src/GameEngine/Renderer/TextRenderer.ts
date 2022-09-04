@@ -11,6 +11,8 @@ export default class TextRenderer extends Renderer {
 
 	public text?: string
 	public size?: number
+	public weight?: 'bold'
+	public color?: string
 
 	public constructor(component: Component2D, params?: Params) {
 		super(component)
@@ -31,10 +33,11 @@ export default class TextRenderer extends Renderer {
 
 		// console.log
 		if (this.text) {
-			ctx.fillStyle = 'black'
-			ctx.textBaseline = 'top'
+			ctx.fillStyle = this.color ?? 'black'
+			ctx.textBaseline = 'middle'
+			ctx.textAlign = 'center'
 
-			ctx.font = `${size}px sans-serif`
+			ctx.font = `${this.weight ? `${this.weight} ` : ''}${size + (this.size ?? 0)}px sans-serif`
 			ctx.fillText(this.text, ...item)
 		}
 	}

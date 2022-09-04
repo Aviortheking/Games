@@ -93,9 +93,11 @@ export default class GameEngine {
 			}
 		})
 		document.addEventListener('mousedown', () => {
+			console.log('cursor down')
 			this.cursor.isDown = true
 		})
 		document.addEventListener('mouseup', () => {
+			console.log('cursor up')
 			this.cursor.isDown = false
 			this.cursor.wasDown = false
 		})

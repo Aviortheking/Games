@@ -10,7 +10,11 @@ export default abstract class Renderer {
 
 	protected getPosition(): Vector2D {
 		const ge = GameEngine.getGameEngine()
-		const realPosition = ge.currentScene!.camera.topLeft.sum(this.component.position)
+		const realPosition = ge.currentScene?.camera.topLeft.sum(this.component.position)
+		if (!realPosition) {
+			console.error('no camera?!?')
+			return this.component.position
+		}
 		return new Vector2D(
 			realPosition.x - this.component.scale.x / 2 - this.component.origin.x,
 			realPosition.y - this.component.scale.y / 2 - this.component.origin.y
