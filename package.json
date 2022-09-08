@@ -10,7 +10,6 @@
 		"test": "jest --config jext.config.js"
 	},
 	"dependencies": {
-		"@dzeio/components": "^0.10.1",
 		"@dzeio/object-util": "^1.2.0",
 		"critters": "^0.0.10",
 		"easy-sitemap": "^1.0.0",

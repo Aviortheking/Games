@@ -29,17 +29,14 @@ export default class Scene {
 	}
 
 	public async init() {
-		this.components.forEach((v) => {
-			if (v.init) {
-				v.init()
-			}
-		})
+		for await (const component of this.components) {
+			await component.init?.()
+		}
 	}
 
 	public async update() {
 		for (let index = 0; index < this.components.length; index++) {
-			const component = this.components[index];
-			await this.updateComponent(component, index)
+			await this.updateComponent(this.components[index], index)
 		}
 	}
 
@@ -99,8 +96,8 @@ export default class Scene {
 			if (debug) {
 				console.log('Processing childs', v)
 			}
-			for await (const child of v.childs) {
-				await this.updateComponent(child)
+			for (let cIndex = 0; cIndex < v.childs.length; cIndex++) {
+				await this.updateComponent(v.childs[cIndex], cIndex)
 			}
 		}
 	}

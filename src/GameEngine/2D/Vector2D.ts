@@ -45,4 +45,9 @@ export default class Vector2D {
 			parseFloat(this.y.toFixed(nDecimal))
 		)
 	}
+
+	public set(x: number, y: number) {
+		this.x = x
+		this.y = y
+	}
 }

@@ -22,8 +22,23 @@ export default class GameEngine {
 		wasDown: false
 	}
 	public currentScene?: Scene
+
+	// last frame timestamp
+	public lastFrame = 0
+
+	/**
+	 * last frame execution time in milliseconds
+	 *
+	 * @memberof GameEngine
+	 */
+	public frameTime = 0
+
 	private isRunning = false
-	private timer = 16.6
+
+
+	// timer between frames
+	private timer = 0
+
 
 	public constructor(
 		id: string,
@@ -61,12 +76,8 @@ export default class GameEngine {
 		ctx.imageSmoothingEnabled = false
 		this.ctx = ctx
 
-		if (options?.goalFramerate) {
-			if (options.goalFramerate === -1) {
-				this.timer = 0
-			} else {
-				this.timer = 1000 / options.goalFramerate
-			}
+		if (options?.goalFramerate && options.goalFramerate >= 0) {
+			this.timer = 1000 / options.goalFramerate
 		}
 	}
 
@@ -80,13 +91,11 @@ export default class GameEngine {
 			return
 		}
 		this.isRunning = true
-		requestAnimationFrame(() => {
-			this.update()
-		})
+		this.currentScene?.init().then(() => this.update())
 		document.addEventListener('mousemove', (ev) => {
 			this.cursor.position = new Vector2D(
-				ev.clientX / this.caseSize.x - (this.currentScene?.camera?.topLeft?.x ?? 0),
-				ev.clientY / this.caseSize.y - (this.currentScene?.camera?.topLeft?.y ?? 0)
+				(ev.clientX + window.scrollX) / this.caseSize.x - (this.currentScene?.camera?.topLeft?.x ?? 0),
+				(ev.clientY + window.scrollY) / this.caseSize.y - (this.currentScene?.camera?.topLeft?.y ?? 0)
 			)
 			if (this.cursor.isDown) {
 				this.cursor.wasDown = true
@@ -109,35 +118,66 @@ export default class GameEngine {
 
 	public async setScene(scene: Scene | string) {
 		console.log('Setting scene', typeof scene === 'string' ? scene : scene.id)
+		const wasRunning = this.isRunning
+		if (wasRunning) {
+			this.isRunning = false
+		}
 		await this.currentScene?.destroy()
+		await this.currentScene?.init()
+		if (wasRunning) {
+			this.isRunning = true
+		}
 		this.currentScene = typeof scene === 'string' ? Scene.scenes[scene] : scene
 		this.currentScene.setGameEngine(this)
 	}
 
-	private update() {
-		const now = new Date().getTime()
-		if (!this.isRunning) {
-			return
-		}
-		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-		if (this.options?.background) {
-			this.ctx.fillStyle = this.options.background
-			this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-		}
-		this.currentScene?.update()
-		const diff = new Date().getTime() - now
-		if (diff > this.timer) {
-			requestAnimationFrame(() => {
-				this.update()
-			})
-		} else {
-			setTimeout(() => {
-				// this.update()
-				requestAnimationFrame(() => {
-					this.update()
-				})
-			}, this.timer - diff)
-		}
+	private async update() {
+		// console.log('update')
+		let frameFinished = true
+		setInterval((it) => {
+			// get current time
+			const now = window.performance.now()
+
+			// game is not runnig, wait a frame
+			if (!this.isRunning || !frameFinished) {
+				// console.log('skip frame')
+				// setTimeout(() => {
+				// 	this.update()
+				// }, this.timer)
+				return
+			}
+
+			// game is running too fast, wait until necessary
+			if (this.lastFrame + this.timer > now ) {
+				// console.log('skip frame')
+				// setTimeout(() => {
+				// 	this.update()
+				// }, (this.lastFrame + this.timer) - now)
+				return
+			}
+			// console.log('new frame')
+			frameFinished = false
+
+			// if a background need to be drawn
+			if (this.options?.background) {
+				this.ctx.fillStyle = this.options.background
+				this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+			} else {
+				// clear the previous frame
+				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+			}
+
+			// update scene
+			this.currentScene?.update()
+
+			// calculate for next frame
+			this.lastFrame = window.performance.now()
+			this.frameTime = window.performance.now() - now
+			frameFinished = true
+			// this.update()
+			// requestAnimationFrame(() => {
+			// })
+		})
 	}
 }
 

@@ -10,10 +10,21 @@ export interface ComponentState {
 	isColliding?: string
 }
 
+export type StaticComponent<
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	T extends {} | void = {} | void
+> =
+	new (params: T | undefined) => Component2D<T>
+
 /**
  * 2D Component
  */
-export default abstract class Component2D {
+export default abstract class Component2D<
+// eslint-disable-next-line @typescript-eslint/ban-types
+T extends {} | void = {} | void
+> {
+
+	public params: T = {} as T
 
 	/**
 	 * Indicate how the component is rendered
@@ -74,6 +85,12 @@ export default abstract class Component2D {
 	 * @memberof Component2D
 	 */
 	public debug?: boolean
+
+	public constructor(it: T | void) {
+		if (it) {
+			this.params = it
+		}
+	}
 
 	/**
 	 * Function run when the component is initialized
