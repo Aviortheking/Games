@@ -2,7 +2,6 @@ import React from 'react'
 import App from 'next/app'
 
 import PlausibleProvider from 'next-plausible'
-import '@dzeio/components/style.css'
 
 export default class CApp extends App {
 

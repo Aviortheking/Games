@@ -1,3 +1,6 @@
+/**
+ * Asset management Class
+ */
 export default class Asset {
 
 	public static assets: Record<string, Asset> = {}

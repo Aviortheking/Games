@@ -6,13 +6,13 @@ import Renderer from '.'
 
 interface Params {
 	material?: string | Asset
-	stroke?: string
+	stroke?: string | {color: string, width: number}
 }
 
-export default class RectRenderer extends Renderer implements Partial<Params> {
+export default class RectRenderer extends Renderer implements Params {
 
 	public material?: string | Asset
-	public stroke?: string
+	public stroke?: string | {color: string, width: number}
 
 	public constructor(component: Component2D, params?: Params) {
 		super(component)
@@ -45,7 +45,12 @@ export default class RectRenderer extends Renderer implements Partial<Params> {
 			ctx.fillRect(...item)
 		}
 		if (this.stroke) {
-			ctx.strokeStyle = this.stroke
+			if (typeof this.stroke === 'string') {
+				ctx.strokeStyle = this.stroke
+			} else {
+				ctx.strokeStyle = this.stroke.color
+				ctx.lineWidth = this.stroke.width
+			}
 			ctx.strokeRect(...item)
 		}
 	}

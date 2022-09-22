@@ -1,6 +1,5 @@
 import GameEngine from 'GameEngine'
-import AssetsManager from './Asset'
-import Camera from './Camera'
+import Camera from './Components/Camera'
 import Component2D, { ComponentState } from './Component2D'
 
 export default class Scene {
@@ -13,6 +12,7 @@ export default class Scene {
 
 	private components: Array<Component2D> = []
 	private ge!: GameEngine
+	private hasClickedComponent: number | undefined
 
 
 	public constructor(sceneId: string) {
@@ -29,20 +29,24 @@ export default class Scene {
 	}
 
 	public async init() {
-		this.components.forEach((v) => {
-			if (v.init) {
-				v.init()
-			}
-		})
-	}
-
-	public async update() {
-		for (const component of this.components) {
-			await this.updateComponent(component)
+		for await (const component of this.components) {
+			await component.init?.()
 		}
 	}
 
-	private async updateComponent(v: Component2D) {
+	public async update() {
+		for (let index = 0; index < this.components.length; index++) {
+			await this.updateComponent(this.components[index], index)
+		}
+	}
+
+	public async destroy() {
+		for await (const component of this.components) {
+			await component.destroy?.()
+		}
+	}
+
+	private async updateComponent(v: Component2D, index: number) {
 		const debug = v.debug
 		if (debug) {
 			console.log('Processing Component', v)
@@ -50,10 +54,19 @@ export default class Scene {
 		const state: Partial<ComponentState> = {}
 		// const width = (v.width() ?? 1) * this.ge.caseSize[0]
 		// const height = (v.height() ?? 1) * this.ge.caseSize[1]
-		if (v.collider && v.collider.type === 'click' && this.ge.cursor.isDown && !this.ge.cursor.wasDown) {
+		if (v.collider && v.collider.type === 'click' && (this.hasClickedComponent === index || !this.hasClickedComponent)) {
 			if (v.collider.pointColliding(this.ge.cursor.position, 'click')) {
-				state.isColliding = 'click'
+				if (this.ge.cursor.isDown && !this.ge.cursor.wasDown) {
+					state.isColliding = 'click'
+					this.hasClickedComponent = index
+				} else if (this.ge.cursor.isDown) {
+					state.isColliding = 'down'
+					this.hasClickedComponent = index
+				}
 			}
+		}
+		if (this.hasClickedComponent === index && !state.isColliding) {
+			this.hasClickedComponent = undefined
 		}
 		// if (v.pos) {
 		// 	const ax = v.pos.x * this.ge.caseSize[0]
@@ -64,6 +77,13 @@ export default class Scene {
 		// 	state.mouseClicking = state.mouseHovering && this.ge.cursor.isDown
 		// 	state.mouseClicked = state.mouseClicking && !this.ge.cursor.wasDown
 		// }
+		if (v.update) {
+			if (debug) {
+				console.log('Updating Component', v)
+			}
+			v.update(state as ComponentState)
+		}
+
 		if (v.renderer) {
 			if (debug) {
 				console.log('Rendering Component', v)
@@ -71,18 +91,13 @@ export default class Scene {
 			// console.log('is rendering new element')
 			await v.renderer.render(this.ge, this.ge.ctx)
 		}
-		if (v.update) {
-			if (debug) {
-				console.log('Updating Component', v)
-			}
-			v.update(state as ComponentState)
-		}
+
 		if (v.childs) {
 			if (debug) {
 				console.log('Processing childs', v)
 			}
-			for (const child of v.childs) {
-				await this.updateComponent(child)
+			for (let cIndex = 0; cIndex < v.childs.length; cIndex++) {
+				await this.updateComponent(v.childs[cIndex], cIndex)
 			}
 		}
 	}

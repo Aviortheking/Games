@@ -54,7 +54,7 @@ export default class Item extends Component2D {
 		console.log('item initialized')
 	}
 
-	public update(state: ComponentState) {
+	public async update(state: ComponentState) {
 		if (!globalState.isPlaying) {
 			return
 		}
@@ -62,7 +62,7 @@ export default class Item extends Component2D {
 		const value: '' | 'X' | 'O' = globalState.gameState[this.x][this.y] as '' | 'X' | 'O'
 		if (state.isColliding === 'click' && value === '') {
 			// console.log('hovering')
-			this.onClick()
+			await this.onClick()
 		}
 
 		if (value === 'X') {
@@ -75,7 +75,7 @@ export default class Item extends Component2D {
 		}
 	}
 
-	private onClick() {
+	private async onClick() {
 		const clickSound = new SoundManager('/assets/tictactoe/bip.wav')
 		clickSound.play()
 		globalState.gameState[this.x][this.y] = globalState.playerTurn
@@ -88,7 +88,7 @@ export default class Item extends Component2D {
 				['', '', '']
 			]
 			console.log(globalState)
-			GameEngine.getGameEngine().setScene('Menu')
+			await GameEngine.getGameEngine().setScene('Menu')
 			return
 		}
 		globalState.playerTurn = globalState.playerTurn === 'X' ? 'O' : 'X'

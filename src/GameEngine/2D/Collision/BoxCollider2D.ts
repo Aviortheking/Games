@@ -1,7 +1,7 @@
 import Component2D from 'GameEngine/Component2D'
 import Vector2D from '../Vector2D'
 
-type BuiltinCollisionTypes = 'click'
+type BuiltinCollisionTypes = 'click' | 'pointerDown' | 'pointerUp'
 
 export default class BoxCollider2D {
 	public constructor(
