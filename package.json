@@ -10,13 +10,13 @@
 		"test": "jest --config jext.config.js"
 	},
 	"dependencies": {
-		"@dzeio/components": "^0.10.1",
+		"@dzeio/components": "^1.0.0-beta.9",
 		"@dzeio/object-util": "^1.2.0",
 		"critters": "^0.0.10",
 		"easy-sitemap": "^1.0.0",
-		"next": "^11.0.0",
+		"next": "^13.0.3",
 		"next-compose-plugins": "^2.2.0",
-		"next-plausible": "^1.6.1",
+		"next-plausible": "^3.6.4",
 		"next-pre-css": "^1.0.0",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
