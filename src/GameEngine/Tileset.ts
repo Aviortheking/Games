@@ -32,7 +32,9 @@ export default class Tileset {
 		}
 		// const {x, y} = this.getPosFromId(id)
 		const cols = Math.trunc(this.declaration.fileSize.width / this.width(id))
+		// eslint-disable-next-line id-length
 		const x = id % cols
+		// eslint-disable-next-line id-length
 		const y = Math.trunc(id / cols)
 		const sx = x * this.width(id) + x * (this.declaration.spacing ?? 0)
 		const sy = y * this.height(id) + y * (this.declaration.spacing ?? 0)

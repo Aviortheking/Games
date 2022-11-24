@@ -3,12 +3,13 @@ import RectRenderer from 'GameEngine/Renderer/RectRenderer'
 import Vector2D from '../Vector2D'
 
 export default class PointDebugger extends Component2D {
-	public constructor(point: Vector2D) {
+	public readonly name = 'PointDebugger'
+	public constructor(point: Vector2D, color = 'red') {
 		super()
-		this.scale = new Vector2D(.1, .1)
+		this.scale = new Vector2D(1, 1)
 		this.position = point
-		console.log('Debugging point at location', point)
+		// console.log('Debugging point at location', point)
 		// this.origin = component.origin
-		this.renderer = new RectRenderer(this, {material: 'red'})
+		this.renderer = new RectRenderer(this, {material: color})
 	}
 }

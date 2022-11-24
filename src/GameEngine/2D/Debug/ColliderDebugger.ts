@@ -4,6 +4,7 @@ import BoxCollider2D from '../Collision/BoxCollider2D'
 import Vector2D from '../Vector2D'
 
 export default class ColliderDebugger extends Component2D {
+	public readonly name = 'ColliderDebugger'
 	public constructor(component: Component2D, collider: BoxCollider2D) {
 		super()
 		this.collider = collider

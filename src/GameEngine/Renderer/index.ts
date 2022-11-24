@@ -10,11 +10,12 @@ export default abstract class Renderer {
 
 	protected getPosition(): Vector2D {
 		const ge = GameEngine.getGameEngine()
-		const realPosition = ge.currentScene.camera.topLeft.sum(this.component.position)
-		return new Vector2D(
-			realPosition.x - this.component.scale.x / 2 - this.component.origin.x,
-			realPosition.y - this.component.scale.y / 2 - this.component.origin.y
+		const realPosition = this.component.getAbsolutePosition().sum(
+			-(ge.currentScene?.position?.x ?? 0),
+			-(ge.currentScene?.position?.y ?? 0)
 		)
+
+		return realPosition
 	}
 
 	public abstract render(ge: GameEngine, ctx: CanvasRenderingContext2D): Promise<void>

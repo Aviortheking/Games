@@ -1,6 +1,5 @@
 import { objectLoop } from '@dzeio/object-util'
 import GameEngine from 'GameEngine'
-import Vector2D from 'GameEngine/2D/Vector2D'
 import Component2D from 'GameEngine/Component2D'
 import Tileset from 'GameEngine/Tileset'
 import Renderer from '.'
@@ -20,7 +19,7 @@ export default class TileRenderer extends Renderer implements Params {
 
 	public constructor(component: Component2D, params?: Params) {
 		super(component)
-		objectLoop(params ?? {}, (v, k) => {this[k as 'id'] = v})
+		objectLoop(params ?? {}, (value, key) => {this[key as 'id'] = value})
 	}
 
 	public async render(ge: GameEngine, ctx: CanvasRenderingContext2D) {
@@ -29,14 +28,15 @@ export default class TileRenderer extends Renderer implements Params {
 		}
 		const {sx, sy} = this.tileset.getSourceData(this.id)
 		const position = this.getPosition()
+		await this.tileset.asset.load()
 		ctx.drawImage(
-			await this.tileset.asset.get(),
+			this.tileset.asset.get(),
 			sx,
 			sy,
 			this.tileset.width(this.id),
 			this.tileset.height(this.id),
-			position.x * (ge.caseSize.x),
-			position.y * (ge.caseSize.y),
+			position.x * ge.caseSize.x,
+			position.y * ge.caseSize.y,
 			(this.component.scale.x ?? ge.caseSize.x) * ge.caseSize.x,
 			(this.component.scale.y ?? ge.caseSize.y) * ge.caseSize.y
 		)
