@@ -5,7 +5,7 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
-		"server": "next start",
+		"start": "next start",
 		"lint": "eslint . --ext .ts,.tsx",
 		"test": "jest --config jext.config.js"
 	},
