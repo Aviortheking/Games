@@ -19,7 +19,7 @@ export default class TileRenderer extends Renderer implements Params {
 
 	public constructor(component: Component2D, params?: Params) {
 		super(component)
-		objectLoop(params ?? {}, (value, key) => {this[key as 'id'] = value})
+		objectLoop(params ?? {}, (value, key) => {this[key] = value as any})
 	}
 
 	public async render(ge: GameEngine, ctx: CanvasRenderingContext2D) {

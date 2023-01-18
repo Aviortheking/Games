@@ -5,9 +5,14 @@ export default class Vector2D {
 	public y: number
 
 	public constructor(
-		x: number,
+		x: number | [number, number],
 		y?: number
 	) {
+		if (typeof x === 'object') {
+			this.x = x[0]
+			this.y = x[1]
+			return
+		}
 		this.x = x
 		if (typeof y === 'number') {
 			this.y = y
@@ -16,6 +21,11 @@ export default class Vector2D {
 		}
 	}
 
+	/**
+	 * return a new vector multiplied with the current one
+	 * @param v vector
+	 * @returns a new vector
+	 */
 	public multiply(v: Vector2D): Vector2D {
 		return new Vector2D(
 			v.x * this.x,
@@ -23,6 +33,12 @@ export default class Vector2D {
 		)
 	}
 
+	/**
+	 * return a new vector summed with the current one
+	 * @param v vector or x to add
+	 * @param y y to add
+	 * @returns a new vector
+	 */
 	public sum(v: Vector2D | number, y?: number): Vector2D {
 		if (typeof v === 'number') {
 			return new Vector2D(this.x + v, this.y + (y ?? v))
@@ -108,5 +124,9 @@ export default class Vector2D {
 
 	public equal(vector: Vector2D): boolean {
 		return vector.x === this.x && vector.y === this.y
+	}
+
+	public toArray(): [number, number] {
+		return [this.x, this.y]
 	}
 }

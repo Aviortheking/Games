@@ -1,8 +1,8 @@
 import GameEngine from 'GameEngine'
-import Component2D, { ComponentState } from './Component2D'
-import BoxCollider2D from './2D/Collision/BoxCollider2D'
+import Collider from './2D/Collider'
+import Checker from './2D/Collider/Checker'
 import Vector2D from './2D/Vector2D'
-import { ComponentType } from 'react'
+import Component2D, { ComponentState } from './Component2D'
 
 export default class Scene {
 	public static scenes: Record<string, Scene> = {}
@@ -12,8 +12,8 @@ export default class Scene {
 
 	public position: Vector2D = new Vector2D(0)
 	public scale = 1
+	public components: Array<Component2D> = []
 
-	private components: Array<Component2D> = []
 	private componentsInitialized: Array<boolean> = []
 	private ge!: GameEngine
 	private hasClickedComponent: number | undefined
@@ -86,34 +86,39 @@ export default class Scene {
 		}
 	}
 
+	// eslint-disable-next-line complexity
 	public checkColisions(component: Component2D, exclusion?: Array<Component2D>): Array<Component2D> {
 		const list: Array<Component2D> = []
-		if (component.collider instanceof BoxCollider2D) {
-			const [topLeft, bottomRight] = component.collider.pos()
-			for (const otherComponent of this.components) {
-				if (
-					otherComponent === undefined ||
-					otherComponent.id === component.id ||
-					!(otherComponent.collider instanceof BoxCollider2D)
-				) {
-					continue
-				}
+		if (!component.collider) {
+			return list
+		}
+		for (const otherComponent of this.components) {
+			if (
+				!otherComponent ||
+				otherComponent.id === component.id ||
+				!otherComponent.collider
+			) {
+				continue
+			}
 
-				// Exclude components from being checked
-				if (exclusion?.find((it) => it.id === otherComponent.id)) {
-					continue
-				}
+			// Exclude components from being checked
+			if (exclusion?.find((it) => it.id === otherComponent.id)) {
+				continue
+			}
 
-				// Check for collision
-				const otherCollider = otherComponent.collider.pos()
-				if (
-					bottomRight.x > otherCollider[0].x && // self bottom higher than other top
-					topLeft.x < otherCollider[1].x &&
-					bottomRight.y > otherCollider[0].y &&
-					topLeft.y < otherCollider[1].y
-				) {
-					list.push(otherComponent)
-				}
+			if (component.collider) {
+				component.collider.component = component
+			}
+
+			if (otherComponent.collider) {
+				otherComponent.collider.component = otherComponent
+			}
+
+			// Check for collision
+			if (
+				Checker.detectCollision(component.collider, otherComponent.collider)
+			) {
+				list.push(otherComponent)
 			}
 		}
 		return list
@@ -130,6 +135,7 @@ export default class Scene {
 
 		if (component.childs) {
 			for await (const child of component.childs) {
+				child.parent = component
 				await this.initComponent(child)
 			}
 		}
@@ -153,7 +159,6 @@ export default class Scene {
 		const toExclude: Array<Component2D> = []
 		if (component.childs && component.childs.length > 0) {
 			for await (const child of component.childs) {
-				child.parent = component
 				toExclude.push(...await this.updateComponent(child))
 			}
 		}

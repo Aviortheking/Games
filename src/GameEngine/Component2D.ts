@@ -1,4 +1,4 @@
-import BoxCollider2D from './2D/Collision/BoxCollider2D'
+import Collider from './2D/Collider'
 import Vector2D from './2D/Vector2D'
 import Renderer from './Renderer'
 import Scene from './Scene'
@@ -6,7 +6,7 @@ import Scene from './Scene'
 export interface ComponentState {
 	mouseHovering?: boolean
 	/**
-	 * is it is collinding return the type of collision
+	 * is it is colliding return the type of Collider
 	 */
 	isColliding?: string
 	collideWith?: Array<Component2D>
@@ -16,9 +16,10 @@ export interface ComponentState {
 
 export type StaticComponent<
 	// eslint-disable-next-line @typescript-eslint/ban-types
-	T extends {} | void = {} | void
+	T extends {} | void = {} | void,
+	C extends Component2D<T> = Component2D<T>
 > =
-	new (params: T | undefined) => Component2D<T>
+	new (params: T | undefined) => C
 
 /**
  * 2D Component
@@ -71,10 +72,10 @@ T extends {} | void = {} | void
 	/**
 	 * Component collider for events
 	 *
-	 * @type {BoxCollider2D}
+	 * @type {Collider}
 	 * @memberof Component2D
 	 */
-	public collider?: BoxCollider2D
+	public collider?: Collider
 
 	/**
 	 * Parent component of self is any
@@ -109,6 +110,11 @@ T extends {} | void = {} | void
 	 */
 	public debug?: boolean
 
+	/**
+	 * Component rotation in Degrees
+	 */
+	public rotation = 0
+
 	protected params: T = {} as T
 
 	/**
@@ -117,7 +123,7 @@ T extends {} | void = {} | void
 	 */
 	public abstract readonly name: string
 
-	public constructor(it: T) {
+	public constructor(it: T | void) {
 		if (it) {
 			this.params = it
 		}
@@ -136,14 +142,33 @@ T extends {} | void = {} | void
 
 	public destroy?(): Promise<void> | void
 
-	public getAbsolutePosition(): Vector2D {
-		const realPosition = this.position.sum(
+	public getAbsolutePosition(calculateRotation = true): Vector2D {
+		let pos = this.position.sum(
 			this.scale.multiply(this.origin)
 		)
-		if (!this.parent) {
-			return realPosition
+
+		if (this.parent) {
+			pos = pos.sum(this.parent.getAbsolutePosition(calculateRotation))
 		}
-		return realPosition.sum(this.parent.getAbsolutePosition())
+
+		if (this.rotation && calculateRotation) {
+			const middle = pos.clone().sum(this.scale.x / 2, this.scale.y / 2)
+			const rot = this.rotation * (Math.PI / 180)
+			const tmp = pos.clone().sum(-middle.x, -middle.y)
+			return pos.set(
+				middle.x + (tmp.x * Math.cos(rot) - tmp.y * Math.sin(rot)),
+				middle.y + (tmp.x * Math.sin(rot) + tmp.y * Math.cos(rot))
+			)
+		}
+
+		return pos
+	}
+
+	public getAbsoluteRotation(): number {
+		if (this.parent) {
+			return this.parent.getAbsoluteRotation() + this.rotation
+		}
+		return this.rotation
 	}
 
 	public setState(key: keyof ComponentState, value: any): void {
@@ -152,5 +177,9 @@ T extends {} | void = {} | void
 
 	public updateParam(key: keyof T, value: any): void {
 		this.params[key] = value
+	}
+
+	public getParam(key: keyof T): any {
+		return this.params[key]
 	}
 }

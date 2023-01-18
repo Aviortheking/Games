@@ -6,15 +6,27 @@ import Cursor from './Cursor'
 /**
  * Currently not working Camera implementation
  */
-export default class Camera extends Component2D {
+export default class Camera extends Component2D<{
+	position?: Vector2D
+	zoom?: number
+}> {
 	public name = 'Camera'
 	public position: Vector2D = new Vector2D(0)
 
 	public zoom = 1
 
+	public init(): void | Promise<void> {
+		if (this.params.position) {
+			this.position = this.params.position
+		}
+		if (this.params.zoom) {
+			this.setZoom(this.params.zoom)
+		}
+	}
+
 	public update() {
 		let needCursorUpdate = false
-		const scene = GameEngine.getGameEngine().currentScene
+		const scene = GameEngine.getGameEngine()?.currentScene
 		if (!scene) {
 			return
 		}
@@ -41,5 +53,15 @@ export default class Camera extends Component2D {
 	 */
 	public setZoom(value: number) {
 		this.zoom = value
+	}
+
+	public addToZoom(value: number, min?: number, max?: number) {
+		this.zoom += value
+		if (min && min > this.zoom) {
+			this.zoom = min
+		}
+		if (max && max < this.zoom) {
+			this.zoom = max
+		}
 	}
 }

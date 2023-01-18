@@ -1,5 +1,5 @@
 import GameEngine from 'GameEngine'
-import BoxCollider2D from 'GameEngine/2D/Collision/BoxCollider2D'
+import BoxCollider2D from 'GameEngine/2D/Collider/BoxCollider2D'
 import ColliderDebugger from 'GameEngine/2D/Debug/ColliderDebugger'
 import PointDebugger from 'GameEngine/2D/Debug/PointDebugger'
 import Vector2D from 'GameEngine/2D/Vector2D'
@@ -16,7 +16,9 @@ export default class Item extends Component2D {
 
 	public static explosion = new Explosion()
 
-	public collider: BoxCollider2D = new BoxCollider2D(this, 'click')
+	public name = 'Item'
+
+	public collider: BoxCollider2D = new BoxCollider2D()
 
 	private x: number
 	private y: number
@@ -43,7 +45,7 @@ export default class Item extends Component2D {
 		// console.log(this.tileset.getSourceData(0), this.tileset.width(0), this.tileset.height(0))
 		// console.log(this.tileset.getSourceData(1))
 		this.childs = [
-			new ColliderDebugger(this, this.collider),
+			new ColliderDebugger(),
 			new PointDebugger(this.collider.pos()[0]),
 			new PointDebugger(this.collider.pos()[1])
 		]

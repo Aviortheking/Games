@@ -7,6 +7,7 @@ import Tileset from 'GameEngine/Tileset'
 
 export class Explosion extends Component2D {
 
+	public name = 'Explosion'
 	public size = {
 		width: .9,
 		height: .9

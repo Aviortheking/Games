@@ -1,8 +1,9 @@
 import GameEngine from 'GameEngine'
-import BoxCollider2D from 'GameEngine/2D/Collision/BoxCollider2D'
+import PointCollider2D from 'GameEngine/2D/Collider/PointCollider2D'
 import Vector2D from 'GameEngine/2D/Vector2D'
 import Component2D from 'GameEngine/Component2D'
 import RectRenderer from 'GameEngine/Renderer/RectRenderer'
+import Camera from './Camera'
 
 export default class Cursor extends Component2D<{
 	debug?: boolean
@@ -28,7 +29,9 @@ export default class Cursor extends Component2D<{
 
 	public scale: Vector2D = new Vector2D(1)
 
-	public collider: BoxCollider2D = new BoxCollider2D(this)
+	public collider: PointCollider2D = new PointCollider2D()
+
+	private touchZoom = 0
 
 	/**
 	 * event handled down event
@@ -91,14 +94,35 @@ export default class Cursor extends Component2D<{
 		this.onUp(ev)
 	}
 
+
 	private onTouchMove = (ev: TouchEvent) => {
 		// console.log('onTouchMove')
 		this.onMove(ev.touches.item(0) ?? undefined)
+		if (ev.touches.length >= 2) {
+			const cam = GameEngine.getGameEngine().currentScene?.getComponents().find((it) => it.name === 'Camera') as Camera | undefined
+			if (!cam) {
+				return
+			}
+
+			const nv = Math.hypot(
+				ev.touches[0].pageX - ev.touches[1].pageX,
+				ev.touches[0].pageY - ev.touches[1].pageY
+			)
+
+			cam.addToZoom(-((this.touchZoom - nv) / 100), 1)
+			this.touchZoom = nv
+		}
 	}
 
 	private onTouchStart = (ev: TouchEvent) => {
 		// console.log('onTouchStart')
 		this.onDown(ev.touches.item(0) ?? undefined)
+		if (ev.touches.length >= 2) {
+			this.touchZoom = Math.hypot(
+				ev.touches[0].pageX - ev.touches[1].pageX,
+				ev.touches[0].pageY - ev.touches[1].pageY
+			)
+		}
 	}
 
 	private onTouchEnd = (ev: TouchEvent) => {
@@ -122,7 +146,7 @@ export default class Cursor extends Component2D<{
 	 * Catch the onDown events
 	 */
 	private onDown(ev?: MouseEvent | Touch) {
-		console.log('cursor down')
+		// console.log('cursor down')
 		if (ev) {
 			this.updatePosition(
 				ev.clientX ?? 0,
@@ -136,7 +160,7 @@ export default class Cursor extends Component2D<{
 	 * catch the onUp events
 	 */
 	private onUp(ev?: MouseEvent | Touch) {
-		console.log('cursor up')
+		// console.log('cursor up')
 		if (ev) {
 			this.updatePosition(
 				ev.clientX ?? 0,
@@ -146,8 +170,12 @@ export default class Cursor extends Component2D<{
 		this.eventDown = false
 	}
 
+	// eslint-disable-next-line complexity
 	private updatePosition(clientX: number, clientY: number) {
 		const ge = GameEngine.getGameEngine()
+		if (!ge) {
+			return
+		}
 		this.oldPosition = [clientX, clientY]
 		this.position.set(
 			((clientX ?? 0) + window.scrollX - ge.canvas.offsetLeft) /

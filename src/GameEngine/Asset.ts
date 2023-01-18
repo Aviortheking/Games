@@ -40,6 +40,7 @@ export default class Asset {
 			this.image = new Image()
 			this.image.src = this.path
 			this.image.onload = () => {
+				console.log('resource loaded', this.path, this.image.width, this.image.height)
 				this.isLoaded = true
 				this.status = AssetStatus.LOADED
 				res()

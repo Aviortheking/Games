@@ -1,4 +1,4 @@
-import { Button, Text, Util, NotificationManager, Col, Row, Input } from '@dzeio/components'
+import { Button, Col, Input, NotificationManager, Row, Text, Util } from '@dzeio/components'
 import { GetServerSideProps } from 'next'
 import React, { MouseEvent as ReactMouseEvent } from 'react'
 import css from './pokemon-shuffle.module.styl'
@@ -187,8 +187,9 @@ export default class PokemonShuffle extends React.Component<Props, States> {
 				return NotificationManager.addNotification('Cant move nothing')
 			}
 			document.addEventListener('mousemove', this.mouveMove)
-			this.setState({movingItem: {x,y,cell}})
-			this.state.items[y][x] = undefined
+			const items = this.state.items
+			items[y][x] = undefined
+			this.setState({movingItem: {x,y,cell}, items})
 			this.mouveMove(ev.nativeEvent)
 			return
 		} else {

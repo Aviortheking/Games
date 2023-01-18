@@ -7,6 +7,7 @@ import Renderer from '.'
 interface Params {
 	asset?: Asset
 	stream?: boolean
+	imageRotation?: number
 	debug?: boolean
 }
 
@@ -17,13 +18,15 @@ export default class ImageRenderer extends Renderer implements Params {
 
 	public asset?: Asset
 	public stream = true
+	public imageRotation = 0
 	public debug = false
 
 	public constructor(component: Component2D, params?: Params) {
 		super(component)
-		objectLoop(params ?? {}, (value, key) => {this[key as keyof Params] = value})
+		objectLoop(params ?? {}, (value, key) => {this[key as 'stream'] = value as any})
 	}
 
+	// eslint-disable-next-line complexity
 	public async render(ge: GameEngine, ctx: CanvasRenderingContext2D) {
 
 		if (!this.asset) {
@@ -44,15 +47,9 @@ export default class ImageRenderer extends Renderer implements Params {
 			return
 		}
 
-		const globalScale = ge.currentScene?.scale ?? 1
 		const size = this.asset.size()
-		const position = this.getPosition()
-		const final: [number, number, number, number] = [
-			position.x * ge.caseSize.x * globalScale,
-			position.y * ge.caseSize.y * globalScale,
-			(this.component.scale.x ?? ge.caseSize.x) * ge.caseSize.x * globalScale,
-			(this.component.scale.y ?? ge.caseSize.y) * ge.caseSize.y * globalScale
-		]
+		const final = this.preRender(ctx, ge, this.imageRotation)
+
 		if (this.debug || this.component.debug) {
 			ctx.fillStyle = 'red'
 			ctx.fillRect(...final)
@@ -65,5 +62,7 @@ export default class ImageRenderer extends Renderer implements Params {
 			size.y,
 			...final
 		)
+
+		this.postRender(ctx, ge)
 	}
 }

@@ -6,8 +6,11 @@ import Scene from 'GameEngine/Scene'
 import Item from 'games/tictactoe/Item'
 import Line from 'games/tictactoe/Line'
 import Start from 'games/tictactoe/Menu/Start'
+import Cursor from 'GameEngine/Components/Cursor'
 
 export default class Snake extends React.PureComponent {
+
+	private cursor = new Cursor()
 
 	public async componentDidMount() {
 		const ge = new GameEngine('#test', {
@@ -17,19 +20,21 @@ export default class Snake extends React.PureComponent {
 		})
 		const menuScene = new Scene('Menu')
 		menuScene.addComponent(
-			new Start()
+			new Start(),
+			this.cursor
 		)
 		const scene = new Scene('TicTacToe')
 		scene.addComponent(
 			...Array.from(new Array(2)).map((_, index) => new Line(0, index)),
 			...Array.from(new Array(2)).map((_, index) => new Line(1, index)),
 			...Array.from(new Array(9)).map((_, index) => new Item(index)),
-			Item.explosion
+			Item.explosion,
+			this.cursor
 			// new TilingDebugger()
 		)
 
-		ge.start()
-		ge.setScene(menuScene)
+		ge.setScene(menuScene).then(() => ge.start())
+		// ge.start()
 	}
 
 	public render = () => (

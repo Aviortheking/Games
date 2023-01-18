@@ -47,7 +47,7 @@ export default class GameEngine {
 			/**
 			 * Maximum framerate you want to achieve
 			 *
-			 * note: -1 mean infinite
+			 * note: -1/undefined mean infinite
 			 */
 			goalFramerate?: number
 		}

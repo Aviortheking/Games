@@ -17,22 +17,11 @@ export default class RectRenderer extends Renderer implements Params {
 
 	public constructor(component: Component2D, params?: Params) {
 		super(component)
-		objectLoop(params ?? {}, (value, key) => {this[key as 'material'] = value})
+		objectLoop(params ?? {}, (value, key) => {this[key] = value as any})
 	}
 
 	public async render(ge: GameEngine, ctx: CanvasRenderingContext2D) {
-		const position = this.getPosition()
-		const globalScale = ge.currentScene?.scale ?? 1
-		const item: [number, number, number, number] = [
-			// source x
-			position.x * ge.caseSize.x * globalScale,
-			// source y
-			position.y * ge.caseSize.y * globalScale,
-			// size X
-			this.component.scale.x * ge.caseSize.x * globalScale,
-			// size Y
-			this.component.scale.y * ge.caseSize.y * globalScale
-		]
+		const item = this.preRender(ctx, ge)
 
 		if (this.material) {
 			ctx.fillStyle = this.material
@@ -57,5 +46,7 @@ export default class RectRenderer extends Renderer implements Params {
 			}
 			ctx.strokeRect(...item)
 		}
+
+		this.postRender(ctx, ge)
 	}
 }

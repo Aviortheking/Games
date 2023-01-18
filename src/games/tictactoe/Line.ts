@@ -5,6 +5,7 @@ import RectRenderer from 'GameEngine/Renderer/RectRenderer'
 export default class Line extends Component2D {
 
 	// public debug = true
+	public name = 'Line'
 
 	public constructor(direction: number, index: number) {
 		super()
