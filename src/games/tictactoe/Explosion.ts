@@ -1,9 +1,9 @@
-import Vector2D from 'GameEngine/2D/Vector2D'
-import Asset from 'GameEngine/Asset'
-import Component2D from 'GameEngine/Component2D'
-import TileRenderer from 'GameEngine/Renderer/TileRenderer'
-import SoundManager from 'GameEngine/SoundManager'
-import Tileset from 'GameEngine/Tileset'
+import type Vector2D from '../../GameEngine/2D/Vector2D'
+import Asset from '../../GameEngine/Asset'
+import Component2D from '../../GameEngine/Component2D'
+import TileRenderer from '../../GameEngine/Renderer/TileRenderer'
+import SoundManager from '../../GameEngine/SoundManager'
+import Tileset from '../../GameEngine/Tileset'
 
 export class Explosion extends Component2D {
 
@@ -11,6 +11,8 @@ export class Explosion extends Component2D {
 		width: .9,
 		height: .9
 	}
+
+	public ended = true
 
 	// public origin = new Vector2D(-.5, -.5)
 
@@ -22,7 +24,7 @@ export class Explosion extends Component2D {
 	private n = 0
 
 
-	public update() {
+	public override update() {
 		if (this.animationNumber !== -1 && this.n++ >= 12) {
 			this.renderer = new TileRenderer(this, {
 				id: this.animationNumber++,
@@ -31,7 +33,8 @@ export class Explosion extends Component2D {
 			this.n = 0
 			if (this.animationNumber > 5) {
 				this.animationNumber = -1
-				this.renderer = undefined
+				this.renderer = null
+				this.ended = true
 			}
 		}
 	}
@@ -40,5 +43,6 @@ export class Explosion extends Component2D {
 		new SoundManager('/assets/tictactoe/explosion.wav').play()
 		this.position = pos
 		this.animationNumber = 0
+		this.ended = false
 	}
 }

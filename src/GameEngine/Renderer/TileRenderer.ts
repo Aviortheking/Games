@@ -1,9 +1,6 @@
-import { objectLoop } from '@dzeio/object-util'
-import GameEngine from 'GameEngine'
-import Vector2D from 'GameEngine/2D/Vector2D'
-import Component2D from 'GameEngine/Component2D'
-import Tileset from 'GameEngine/Tileset'
 import Renderer from '.'
+import type GameEngine from '..'
+import type Tileset from '../Tileset'
 
 interface Params {
 	tileset?: Tileset
@@ -13,30 +10,25 @@ interface Params {
 /**
  * TODO: Add origin support
  */
-export default class TileRenderer extends Renderer implements Params {
+export default class TileRenderer extends Renderer<Params> {
 
-	public tileset?: Tileset
-	public id?: number
 
-	public constructor(component: Component2D, params?: Params) {
-		super(component)
-		objectLoop(params ?? {}, (v, k) => {this[k as 'id'] = v})
-	}
-
-	public async render(ge: GameEngine, ctx: CanvasRenderingContext2D) {
-		if (!this.tileset || typeof this.id !== 'number') {
+	public override async render(ge: GameEngine, ctx: CanvasRenderingContext2D) {
+		await super.render(ge, ctx)
+		if (!this.props.tileset || typeof this.props.id !== 'number') {
 			return
 		}
-		const {sx, sy} = this.tileset.getSourceData(this.id)
+		const {sx, sy} = this.props.tileset.getSourceData(this.props.id)
 		const position = this.getPosition()
+		await this.props.tileset.asset.load()
 		ctx.drawImage(
-			await this.tileset.asset.get(),
+			this.props.tileset.asset.get(),
 			sx,
 			sy,
-			this.tileset.width(this.id),
-			this.tileset.height(this.id),
-			position.x * (ge.caseSize.x),
-			position.y * (ge.caseSize.y),
+			this.props.tileset.width(this.props.id),
+			this.props.tileset.height(this.props.id),
+			position.x * ge.caseSize.x,
+			position.y * ge.caseSize.y,
 			(this.component.scale.x ?? ge.caseSize.x) * ge.caseSize.x,
 			(this.component.scale.y ?? ge.caseSize.y) * ge.caseSize.y
 		)

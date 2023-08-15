@@ -1,0 +1,270 @@
+---
+
+const css: Record<string, any> = {}
+
+const boardSize = 6
+const itemCount = 5
+const bossId = Math.floor(Math.random() * 800 + 2)
+
+import './pokemon-shuffle.styl'
+---
+
+<main>
+	<form method="GET">
+		<input name="boardSize" type="number" placeholder="Nombre de lignes" value={boardSize} max={10} />
+		<input name="itemCount" type="number" placeholder="Nombre de pokémon différents" value={itemCount} max={810} />
+		<button>Changer</button>
+	</form>
+	<ul>
+		<li><p id="turn">Tour: 0</p></li>
+		<li><p id="combo">Combo: 0, Max: 0</p></li>
+		<li><p id="points">Points: 0</p></li>
+	</ul>
+	<div class="flex items-center flex-col">
+		<div class="flex flex-col justify-center items-center">
+			<p class:list={[
+				// css[`icon-${this.state.boss.id}`],
+				'cell',
+				`icon-${bossId}`,
+				'noAnimation',
+				'boss',
+				// [css.loading, this.state.hitBoss]
+			]}>
+			</p>
+			<div class="bossBar">
+				<div>
+					<!-- `${Math.max(0, 100 - (100 * this.state.damage / this.state.boss.hp))}%` -->
+					<div id="health" style={{width: '100%'}}></div>
+				</div>
+			</div>
+		</div>
+		<template id="item">
+			<td
+				class="cellParent"
+			>
+				<div class:list={[
+					// css[`icon-${cell.id}`],
+					'cell',
+					// [css.isFalling, cell.isFalling],
+					// [css.justSpawned, cell.justSpawned],
+					// [css.explode, cell.horizontalCombo || cell.verticalCombo]
+				]}>
+				</div>
+			</td>
+		</template>
+		<table style={{margin: 'auto'}} class={css.table}>
+			<tbody class:list={[css.table, [css.loading/*, state.loading*/]]}>
+				<!-- place below the items -->
+			</tbody>
+		</table>
+	</div>
+	<button id="start">Start!</button>
+	<div id="moving" class="hoverItem hidden" style={{
+		transform: 'scale(2)'
+	}}>
+		<div class="cell">
+		</div>
+	</div>
+	<p>
+		TODO list:
+	</p>
+	<ul>
+		<li><p>Faire que les clear ce fasse de manière Async</p></li>
+		<li><p>Utiliser le système de damages de Pokémon Shuffle https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_Shuffle#Damage</p></li>
+		<li><p>Mode VS (Voir si on fait en local et/ou en ligne avec le Websocket)</p></li>
+		<li><p>Système de classement en ligne (maybe avec un compte pour eviter lees hackers lol)</p></li>
+		<li><p>Combat de boss a la Pokémon Shuffle lol</p></li>
+	</ul>
+</main>
+
+<script>
+	import PokemonShuffle from '../../games/PokemonShuffle'
+	import PageStates from '../../libs/States'
+	interface Cell {
+		// cell pokemon ID
+		id: number
+		// is cell part of an horizontal combo
+		horizontalCombo?: boolean
+		// is cell part of a vertical combo
+		verticalCombo?: boolean
+		// has cell just spawned?
+		justSpawned?: boolean
+		// is cell falling
+		isFalling?: boolean
+	}
+
+	interface States {
+		// the first array represent the row, the second the col
+		loading: boolean
+		movingItem: {row: number, col: number, cell: Cell} | null
+		cursorPos: {x: number, y: number}
+	}
+
+	const props = {
+		boardSize: 6,
+		itemCount: 5
+	}
+
+	const shuffle = new PokemonShuffle(
+		props.boardSize,
+		props.itemCount,
+		{
+			health: 10e4,
+			id: 2
+		}
+	)
+
+	const state = new PageStates<States>({
+		loading: false,
+		movingItem: null,
+		cursorPos: {x: 0, y: 0}
+	})
+	window.state = state
+
+	const moving = document.getElementById('moving') as HTMLElement
+	const movingCell = moving.querySelector('div') as HTMLElement
+	state.listen('movingItem', () => {
+		const movingItem = state.props.movingItem
+		if (!movingItem) {
+			moving.classList.add('hidden')
+			return
+		}
+		moving.classList.remove('hidden')
+		movingCell.classList.add(`icon-${movingItem?.cell.id}`)
+		const classes = movingCell.className.split(' ')
+		const iconClass = classes?.find((it) => it.startsWith('icon-'))
+		if (!iconClass || !iconClass.endsWith(movingItem.cell.id.toString())) {
+			movingCell.classList.add(`icon-${movingItem.cell.id}`)
+			if (iconClass) {
+				movingCell.classList.remove(iconClass)
+			}
+		}
+
+	})
+	const health = document.getElementById('health') as HTMLElement
+	shuffle.gameState.listen('damage', () => {
+		console.log('damage took')
+		const dmg = shuffle.gameState.props.damage
+		const boss = shuffle.boss
+		const hp = Math.max(0, 100 - (100 * dmg / boss.health))
+		health.style.width = `${hp}%`
+	})
+	state.listen('cursorPos', () => {
+		const cursorPos = state.props.cursorPos
+		const moving = document.getElementById('moving') as HTMLElement
+		moving.style.left = cursorPos?.x + 'px'
+		moving.style.top = cursorPos?.y + 'px'
+	})
+
+	const onCellClick = async (ev: MouseEvent) => {
+		const col = parseInt((ev.currentTarget as HTMLElement).dataset.col ?? '', 10)
+		const row = parseInt((ev.currentTarget as HTMLElement).dataset.row ?? '', 10)
+		console.log('col', col, 'row', row)
+		if (!state.props.movingItem) {
+			const cell = shuffle.gameState.props.cells![row]![col]
+			if (!cell) {
+				console.warn('you can\'t move nothingness')
+				return // NotificationManager.addNotification('Cant move nothing')
+			}
+			document.addEventListener('mousemove', moveMouse)
+			state.setProps({movingItem: { row, col, cell }})
+			shuffle.gameState.props.cells![row]![col] = null
+			moveMouse(ev)
+			return
+		} else {
+			document.removeEventListener('mousemove', moveMouse)
+			const cellFrom: [number, number] = [state.props.movingItem.row, state.props.movingItem.col]
+			const cellTo: [number, number] = [row, col]
+			state.setProps({
+				movingItem: null,
+				loading: true
+			})
+			await shuffle.moveCell(cellFrom, cellTo)
+		}
+	}
+
+	const tbody = document.querySelector('tbody') as HTMLTableSectionElement
+	const template = document.querySelector('template') as HTMLTemplateElement
+	shuffle.gameState.listen('cells', () => {
+		const newItems = shuffle.gameState.props.cells
+		// console.log('updating items', JSON.stringify(items), '\n--------\n', JSON.stringify(newItems))
+		const existingRows = tbody.children
+		for (let rowIdx = 0; rowIdx < (newItems ?? []).length; rowIdx++) {
+			const row = (newItems ?? [])[rowIdx]
+			const tr = existingRows.item(rowIdx) ?? document.createElement('tr')
+			for (let itemIdx = 0; itemIdx < (row ?? []).length; itemIdx++) {
+				const item = (row ?? [])[itemIdx]
+				const existingItems = tr.children
+				const exists = !!existingItems.item(itemIdx)
+				const clone = template.content.cloneNode(true)as HTMLTemplateElement
+				const td = existingItems.item(itemIdx) as HTMLElement ?? clone.querySelector('td') as HTMLElement
+				if (!exists) {
+					td?.addEventListener('click', onCellClick)
+					td!.dataset.col = itemIdx.toString()
+					td!.dataset.row = rowIdx.toString()
+				} else {
+					td.dataset.updated = 'true'
+					td.dataset.item = JSON.stringify(item)
+				}
+				const inner = td.querySelector('div')
+				td.dataset.inner = (!!inner).toString()
+				if (item && inner) {
+					const classes = (inner.getAttribute('class') ?? '').split(' ')
+					const iconClass = classes?.find((it) => it.startsWith('icon-'))
+					if (!iconClass || !iconClass.endsWith(item.id.toString())) {
+						inner?.classList.add(`icon-${item!.id}`)
+						if (iconClass) {
+							inner.classList.remove(iconClass)
+						}
+					}
+					if (item.isFalling) {
+						inner.classList.add('isFalling')
+					} else {
+						inner.classList.remove('isFalling')
+					}
+					if (item.justSpawned) {
+						inner.classList.add('justSpawned')
+					} else {
+						inner.classList.remove('justSpawned')
+					}
+					if (item.horizontalCombo || item?.verticalCombo) {
+						inner.classList.add('explode')
+					} else {
+						inner.classList.remove('explode')
+					}
+				} else if (!item && inner) {
+					inner.className = ''
+
+				}
+				if (!existingItems.item(itemIdx)) {
+					tr.appendChild(clone)
+				}
+			}
+			if (!existingRows.item(rowIdx)) {
+				tbody.appendChild(tr)
+			}
+		}
+	})
+
+	// let n = props.boardSize
+	// document.getElementById('start')?.addEventListener('click', () => {
+	// 	state.setProps({
+	// 		loading: true,
+	// 		// generate datas
+	// 		items: Array
+	// 			.from(Array(props.boardSize))
+	// 			.map(
+	// 				() => Array.from(Array(props.boardSize))
+	// 					.map(() => ({id: random(0, props.itemCount), id2: n++}))
+	// 			)
+	// 	})
+	// })
+
+	const moveMouse = (ev: MouseEvent) => {
+		state.setProps({cursorPos: {
+			x: ev.clientX,
+			y: ev.clientY
+		}})
+	}
+
+</script>

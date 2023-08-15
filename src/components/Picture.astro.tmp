@@ -1,0 +1,42 @@
+---
+import { LocalImageProps, RemoteImageProps, getImage } from 'astro:assets'
+import AstroUtils from '../libs/AstroUtils'
+type ImageProps = LocalImageProps | RemoteImageProps
+export type Props = ImageProps
+
+const res = await AstroUtils.wrap(async () => {
+	const image = Astro.props.src
+	const ext = typeof image === 'string' ? image.substring(image.lastIndexOf('.')) : image.format
+	if (ext === 'svg') {
+		return {
+			format: 'raw',
+			props: {
+				...Astro.props,
+				src: typeof image === 'string' ? image : image.src
+			}
+		}
+	}
+
+	const avif = await getImage({src: Astro.props.src, format: 'avif'})
+	const webp = await getImage({src: Astro.props.src, format: 'webp'})
+	const orig = await getImage({src: Astro.props.src, format: ext})
+
+	return {
+		format: 'new',
+		avif,
+		webp,
+		orig
+	}
+})
+
+---
+
+{res.format === 'new' && (
+	<picture class:list={[res.orig!.attributes.class, Astro.props.class]}>
+		<source srcset={res.avif!.src} type="image/avif" />
+		<source srcset={res.webp!.src} type="image/webp" />
+		<img src={res.orig!.src} class="" {...res.orig!.attributes} />
+	</picture>
+) || (
+	<img {...res.props} />
+)}

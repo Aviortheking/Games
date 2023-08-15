@@ -1,4 +1,5 @@
-import Component2D from 'GameEngine/Component2D'
+import GameEngine from '../..'
+import type Component2D from '../../Component2D'
 import Vector2D from '../Vector2D'
 
 type BuiltinCollisionTypes = 'click' | 'pointerDown' | 'pointerUp'
@@ -22,7 +23,12 @@ export default class BoxCollider2D {
 
 	public pos(): [Vector2D, Vector2D] {
 		const scale = this.scale.multiply(this.component.scale)
-		const positionCenter = this.component.origin.sub(
+		const positionCenter = GameEngine.getGameEngine().currentScene?.position.sum(this.component.origin.sub(
+			new Vector2D(
+				this.component.position.x,
+				this.component.position.y
+			)
+		)) ?? this.component.origin.sub(
 			new Vector2D(
 				this.component.position.x,
 				this.component.position.y
@@ -31,12 +37,22 @@ export default class BoxCollider2D {
 
 		const center = this.center.sum(positionCenter)
 		return [new Vector2D(
-			center.x - scale.x / 2,
-			center.y - scale.y / 2
+			center.x,
+			center.y
 		),
 		new Vector2D(
-			center.x + scale.x / 2,
-			center.y + scale.y / 2
+			center.x + scale.x,
+			center.y + scale.y
 		)]
+	}
+
+	public collideWith(collider: BoxCollider2D) {
+		const selfPos = this.pos()
+		const otherPos = collider.pos()
+
+		return selfPos[1].x >= otherPos[0].x && // self bottom higher than other top
+		selfPos[0].x <= otherPos[1].x &&
+		selfPos[1].y >= otherPos[0].y &&
+		selfPos[0].y <= otherPos[1].y
 	}
 }

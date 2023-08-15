@@ -1,8 +1,0 @@
-node_modules
-
-out
-.next
-
-next-env.d.ts
-*.js
-__tests__

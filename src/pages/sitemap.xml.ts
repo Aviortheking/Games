@@ -1,15 +1,13 @@
-import { GetServerSideProps } from 'next'
+import type { APIRoute } from 'astro'
 import Sitemap from 'easy-sitemap'
 
-export default class SitemapXml {}
-
-export const getServerSideProps: GetServerSideProps = async ({res}) => {
-	const sitemap = new Sitemap('https://games.avior.me', {response: res})
+export const get: APIRoute = async () => {
+	const sitemap = new Sitemap('https://games.avior.me')
 	sitemap.addEntry('/')
 	sitemap.addEntry('/pokemon-shuffle')
 	sitemap.addEntry('/tictactoe')
-	sitemap.build()
 	return {
-		notFound: true
+		status: 200,
+		body: sitemap.build()
 	}
 }

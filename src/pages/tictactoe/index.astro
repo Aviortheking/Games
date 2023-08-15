@@ -1,0 +1,46 @@
+<canvas id="test" width="300" height="300"></canvas>
+
+<script>
+	import GameEngine from '../../GameEngine'
+	import Camera from '../../GameEngine/Components/Camera'
+	import Cursor from '../../GameEngine/Components/Cursor'
+	import FPSCounter from '../../GameEngine/Components/FPSCounter'
+	import Scene from '../../GameEngine/Scene'
+	import Item from '../../games/tictactoe/Item'
+	import Line from '../../games/tictactoe/Line'
+	import Start from '../../games/tictactoe/Menu/Start'
+
+	const ge = new GameEngine('#test', {
+		caseCount: 3,
+		background: 'gray'
+	})
+	const camera = new Camera()
+	const fps = new FPSCounter({
+		size: 1
+	})
+	const cursor = new Cursor({
+		debug: false,
+		zIndex: 1000
+	})
+	const menuScene = new Scene('Menu')
+	menuScene.addComponent(
+		camera,
+		fps,
+		cursor,
+		new Start()
+	)
+	const scene = new Scene('TicTacToe')
+	scene.addComponent(
+		fps,
+		camera,
+		cursor,
+		...Array.from(new Array(2)).map((_, index) => new Line(0, index)),
+		...Array.from(new Array(2)).map((_, index) => new Line(1, index)),
+		...Array.from(new Array(9)).map((_, index) => new Item(index)),
+		Item.explosion,
+		// new TilingDebugger()
+	)
+
+	await ge.setScene(menuScene)
+	ge.start()
+</script>

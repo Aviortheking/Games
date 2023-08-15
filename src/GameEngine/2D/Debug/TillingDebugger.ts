@@ -1,9 +1,10 @@
 /* eslint-disable max-classes-per-file */
-import Component2D, { ComponentState } from 'GameEngine/Component2D'
-import RectRenderer from 'GameEngine/Renderer/RectRenderer'
+import Component2D from '../../Component2D'
+import RectRenderer from '../../Renderer/RectRenderer'
 import Vector2D from '../Vector2D'
 
 export default class TilingDebugger extends Component2D {
+	public readonly name = 'TilingDebugger'
 	public constructor() {
 		super()
 		for (let i0 = 0; i0 < 10; i0++) {
@@ -22,6 +23,7 @@ export default class TilingDebugger extends Component2D {
 }
 
 class CaseDebugger extends Component2D {
+	public readonly name = 'CaseDebugger'
 	public renderer: RectRenderer = new RectRenderer(this, {stroke: 'black'})
 	public constructor(pos: Vector2D) {
 		super()
